@@ -18,7 +18,7 @@
         <h1 class="text-5xl font-bold mb-4">Welcome to [Your Store Name]</h1>
         <p class="text-lg mb-8">Discover top quality products with fast delivery and great prices.</p>
         <a href="products.php" class="px-6 py-3 bg-white text-black rounded-full font-semibold hover:bg-gray-200 transition">
-            Browse Productst
+            Browse Products
         </a>
     </div>
 </body>
