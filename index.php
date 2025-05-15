@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -23,3 +24,27 @@
     </div>
 </body>
 </html>
+=======
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Landing Page</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.1/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="relative h-screen overflow-hidden">
+    <!-- Background Image -->
+    <div class="absolute inset-0">
+        <img src="assets/backgrounds/bg1.jpg" alt="Background" class="object-cover w-full h-full" />
+    </div>
+
+    <!-- Smooth Transparent Block -->
+    <div class="relative z-10 flex items-center justify-center h-full">
+        <div class="w-[400px] h-[400px] bg-blue-900 bg-opacity-60 rounded-2xl shadow-lg">
+            <!-- Empty smooth box -->
+        </div>
+    </div>
+</body>
+</html>
+>>>>>>> db1ff03 (test)
