@@ -16,7 +16,7 @@
     <!-- Content -->
     <div class="relative z-10 flex flex-col items-center justify-center h-full text-white text-center">
         <h1 class="text-5xl font-bold mb-4">Welcome to [Your Store Name]</h1>
-        <p class="text-lg mb-8">Discover top quality products with fast delivery and great prices.</p>
+        <p class="text-lg mb-8">Discover top quality products with fast delivery and great prices!</p>
         <a href="products.php" class="px-6 py-3 bg-white text-black rounded-full font-semibold hover:bg-gray-200 transition">
             Browse Products
         </a>
