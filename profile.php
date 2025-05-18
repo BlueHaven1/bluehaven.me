@@ -353,7 +353,7 @@ if ($profileResponse['statusCode'] === 200 && !empty($profileResponse['data'])) 
                 <nav>
                     <ul>
                         <li><a href="index.php">Home</a></li>
-                        <li><a href="#">Store</a></li>
+                        <li><a href="products.php">Store</a></li>
                         <li><a href="#">Team</a></li>
                         <li><a href="#">Reviews</a></li>
                         <li><a href="#">Documentation</a></li>
@@ -399,6 +399,7 @@ if ($profileResponse['statusCode'] === 200 && !empty($profileResponse['data'])) 
                     <div class="profile-tab active" data-tab="profile">Profile Information</div>
                     <div class="profile-tab" data-tab="security">Security</div>
                     <div class="profile-tab" data-tab="purchases">Purchases</div>
+                    <div class="profile-tab" data-tab="subscriptions">Subscriptions</div>
                 </div>
 
                 <div class="profile-content">
@@ -487,7 +488,7 @@ if ($profileResponse['statusCode'] === 200 && !empty($profileResponse['data'])) 
                         ?>
                         <div style="text-align: center; padding: 2rem 0;">
                             <p style="color: var(--text-secondary); margin-bottom: 1rem;">You haven't made any purchases yet.</p>
-                            <a href="#" class="btn btn-outline">Browse Store</a>
+                            <a href="products.php" class="btn btn-outline">Browse Store</a>
                         </div>
                         <?php else: ?>
                         <div style="overflow-x: auto;">
@@ -517,6 +518,78 @@ if ($profileResponse['statusCode'] === 200 && !empty($profileResponse['data'])) 
                             </table>
                         </div>
                         <?php endif; ?>
+                    </div>
+
+                    <!-- Subscriptions Tab -->
+                    <div class="tab-content" id="subscriptions-tab">
+                        <h2 style="margin-bottom: 1.5rem;">Your Subscriptions</h2>
+
+                        <?php
+                        // Get subscriptions from Supabase
+                        $subscriptionsResponse = authenticatedRequest(
+                            '/rest/v1/subscriptions?user_id=eq.' . $user['id'] . '&select=*,product:products(*)',
+                            'GET'
+                        );
+
+                        $subscriptions = [];
+                        if ($subscriptionsResponse['statusCode'] === 200) {
+                            $subscriptions = $subscriptionsResponse['data'];
+                        }
+
+                        if (empty($subscriptions)):
+                        ?>
+                        <div style="text-align: center; padding: 2rem 0;">
+                            <p style="color: var(--text-secondary); margin-bottom: 1rem;">You don't have any active subscriptions.</p>
+                            <a href="products.php" class="btn btn-outline">Browse Products</a>
+                        </div>
+                        <?php else: ?>
+                        <div style="overflow-x: auto;">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr>
+                                        <th style="text-align: left; padding: 0.75rem; border-bottom: 1px solid var(--border-color);">Product</th>
+                                        <th style="text-align: left; padding: 0.75rem; border-bottom: 1px solid var(--border-color);">Started</th>
+                                        <th style="text-align: right; padding: 0.75rem; border-bottom: 1px solid var(--border-color);">Price</th>
+                                        <th style="text-align: center; padding: 0.75rem; border-bottom: 1px solid var(--border-color);">Status</th>
+                                        <th style="text-align: center; padding: 0.75rem; border-bottom: 1px solid var(--border-color);">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($subscriptions as $subscription): ?>
+                                    <tr>
+                                        <td style="padding: 0.75rem; border-bottom: 1px solid var(--border-color);"><?php echo htmlspecialchars($subscription['product']['name']); ?></td>
+                                        <td style="padding: 0.75rem; border-bottom: 1px solid var(--border-color);"><?php echo date('M d, Y', strtotime($subscription['start_date'])); ?></td>
+                                        <td style="text-align: right; padding: 0.75rem; border-bottom: 1px solid var(--border-color);">
+                                            $<?php echo number_format($subscription['product']['subscription_price'], 2); ?>/<?php echo $subscription['product']['subscription_interval']; ?>
+                                        </td>
+                                        <td style="text-align: center; padding: 0.75rem; border-bottom: 1px solid var(--border-color);">
+                                            <span style="display: inline-block; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.8rem;
+                                                background-color: <?php
+                                                    if ($subscription['status'] === 'active') echo 'rgba(16, 185, 129, 0.1)';
+                                                    else if ($subscription['status'] === 'cancelled') echo 'rgba(239, 68, 68, 0.1)';
+                                                    else echo 'rgba(107, 114, 128, 0.1)';
+                                                ?>;
+                                                color: <?php
+                                                    if ($subscription['status'] === 'active') echo 'var(--success-color)';
+                                                    else if ($subscription['status'] === 'cancelled') echo 'var(--error-color)';
+                                                    else echo 'var(--text-secondary)';
+                                                ?>;">
+                                                <?php echo ucfirst(htmlspecialchars($subscription['status'])); ?>
+                                            </span>
+                                        </td>
+                                        <td style="text-align: center; padding: 0.75rem; border-bottom: 1px solid var(--border-color);">
+                                            <a href="subscriptions.php" class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">Manage</a>
+                                        </td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                        <?php endif; ?>
+
+                        <div style="margin-top: 2rem; text-align: center;">
+                            <a href="subscriptions.php" class="btn btn-primary">Manage All Subscriptions</a>
+                        </div>
                     </div>
                 </div>
             </div>

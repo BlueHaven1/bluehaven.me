@@ -43,11 +43,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $isFeatured = isset($_POST['isFeatured']) ? true : false;
     $isActive = isset($_POST['isActive']) ? true : false;
 
+    // Subscription data
+    $isSubscription = isset($_POST['isSubscription']) ? true : false;
+    $subscriptionPrice = filter_input(INPUT_POST, 'subscriptionPrice', FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
+    $subscriptionInterval = filter_input(INPUT_POST, 'subscriptionInterval', FILTER_SANITIZE_STRING);
+    $subscriptionDescription = filter_input(INPUT_POST, 'subscriptionDescription', FILTER_SANITIZE_STRING);
+
     // Validate input
     if (empty($name) || empty($description) || empty($price) || empty($category)) {
         $error = 'Name, description, price, and category are required';
     } else if (!is_numeric($price) || $price <= 0) {
         $error = 'Price must be a positive number';
+    } else if ($isSubscription && (!is_numeric($subscriptionPrice) || $subscriptionPrice <= 0)) {
+        $error = 'Subscription price must be a positive number';
+    } else if ($isSubscription && empty($subscriptionInterval)) {
+        $error = 'Subscription interval is required for subscription products';
     } else {
         // Update product in Supabase
         $productData = [
@@ -58,8 +68,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'image_url' => $imageUrl,
             'is_featured' => $isFeatured ? true : false,
             'is_active' => $isActive ? true : false,
+            'is_subscription' => $isSubscription ? true : false,
             'updated_at' => date('c')
         ];
+
+        // Add subscription fields if it's a subscription product
+        if ($isSubscription) {
+            $productData['subscription_price'] = (float) $subscriptionPrice;
+            $productData['subscription_interval'] = $subscriptionInterval;
+            $productData['subscription_description'] = $subscriptionDescription;
+        } else {
+            // Clear subscription fields if it's not a subscription product
+            $productData['subscription_price'] = 0;
+            $productData['subscription_interval'] = null;
+            $productData['subscription_description'] = null;
+        }
 
         // Log the data being sent
         error_log('Updating product: ' . $productId);
@@ -443,6 +466,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
                     </div>
 
+                    <div class="form-group">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="isSubscription" name="isSubscription" <?php echo ($product['is_subscription'] ?? false) ? 'checked' : ''; ?> onchange="toggleSubscriptionFields()">
+                            <label for="isSubscription">Subscription Product</label>
+                        </div>
+                        <small style="color: var(--text-secondary); font-size: 0.8rem; margin-top: 0.25rem; display: block;">Enable if this product requires a recurring payment</small>
+                    </div>
+
+                    <div id="subscriptionFields" style="display: none; border: 1px solid var(--border-color); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.5rem;">
+                        <h3 style="margin-bottom: 1rem; font-size: 1.1rem; color: var(--accent-color);">Subscription Details</h3>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="subscriptionPrice">Monthly Price ($)</label>
+                                <input type="number" id="subscriptionPrice" name="subscriptionPrice" class="form-control" value="<?php echo htmlspecialchars($product['subscription_price'] ?? ''); ?>" step="0.01" min="0">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="subscriptionInterval">Billing Interval</label>
+                                <select id="subscriptionInterval" name="subscriptionInterval" class="form-control">
+                                    <option value="month" <?php echo ($product['subscription_interval'] ?? '') === 'month' ? 'selected' : ''; ?>>Monthly</option>
+                                    <option value="year" <?php echo ($product['subscription_interval'] ?? '') === 'year' ? 'selected' : ''; ?>>Yearly</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="subscriptionDescription">Subscription Benefits</label>
+                            <textarea id="subscriptionDescription" name="subscriptionDescription" class="form-control" placeholder="Describe what's included in the subscription..."><?php echo htmlspecialchars($product['subscription_description'] ?? ''); ?></textarea>
+                        </div>
+                    </div>
+
                     <div class="form-actions">
                         <a href="index.php" class="btn btn-outline">Cancel</a>
                         <button type="submit" class="btn btn-primary">Save Changes</button>
@@ -451,5 +506,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
     </section>
+    <script>
+        function toggleSubscriptionFields() {
+            const isSubscription = document.getElementById('isSubscription').checked;
+            const subscriptionFields = document.getElementById('subscriptionFields');
+
+            if (isSubscription) {
+                subscriptionFields.style.display = 'block';
+                document.getElementById('subscriptionPrice').required = true;
+            } else {
+                subscriptionFields.style.display = 'none';
+                document.getElementById('subscriptionPrice').required = false;
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            toggleSubscriptionFields();
+        });
+    </script>
 </body>
 </html>
